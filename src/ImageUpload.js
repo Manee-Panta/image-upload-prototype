@@ -1,4 +1,4 @@
-import React, {useRef, useState} from "react";
+import React, { useRef, useState } from "react";
 import { AppBar } from "@mui/material";
 import { Toolbar } from "@mui/material";
 import { Button } from "@mui/material";
@@ -9,96 +9,130 @@ import { DialogTitle } from "@mui/material";
 import { DialogContent } from "@mui/material";
 import { TextField } from "@mui/material";
 import { TextareaAutosize } from "@mui/material";
+import { Card } from "@mui/material";
+import { CardContent } from "@mui/material";
+import { CardMedia } from "@mui/material";
+import { Grid } from "@mui/material";
 
 const ImageUpload = () => {
-    const fileInputRef = useRef(null);
-    const [selectedFile, setSelectedFile]= useState(null)
-    const [openDialog, setOpenDialog] = useState(false);
-    const [textValue, setTextValue] = useState("");
-    const [textareaValue, setTextareaValue] = useState("");
-  
-    const handleUploadClick = () => {
-      if (fileInputRef.current) {
-        fileInputRef.current.click();
-      }
-    };
-  
-    const handleFileUpload = (e) => {
-      const file = e.target.files[0];
-      setSelectedFile(file)
-      file ? setOpenDialog(true):  setOpenDialog(false)
-      console.log('Selected file:', file);
-    };
+  const fileInputRef = useRef(null);
+  const [selectedFile, setSelectedFile] = useState(null);
+  const [openDialog, setOpenDialog] = useState(false);
+  const [textValue, setTextValue] = useState("");
+  const [textareaValue, setTextareaValue] = useState("");
+  const [uploadedData, setUploadedData] = useState([]);
 
-    const handleDialogClose = () => {
-        setOpenDialog(false);
-      };
-      const handleTextChange = (e) => {
-        setTextValue(e.target.value);
-      };
-    
-      const handleTextareaChange = (e) => {
-        setTextareaValue(e.target.value);
-      };
-    
-      const handleFormSubmit = () => {
-        console.log('Selected File:',selectedFile)
-        console.log("Text Value:", textValue);
-        console.log("Textarea Value:", textareaValue);
-        setOpenDialog(false);
-      };
+  const handleUploadClick = () => {
+    if (fileInputRef.current) {
+      fileInputRef.current.click();
+    }
+  };
 
-      const renderSelectedImage = () => {
-        return (
-          selectedFile && (
-            <div>
-              <img
-                src={URL.createObjectURL(selectedFile)}
-                alt="Selected File"
-                style={{ maxWidth: '100%', maxHeight: '400px' }}
-              />
-            </div>
-          )
-        );
-      };
+  const handleFileUpload = (e) => {
+    const file = e.target.files[0];
+    setSelectedFile(file);
+    setOpenDialog(!!file);
+  };
+
+  const handleDialogClose = () => {
+    setOpenDialog(false);
+  };
+
+  const handleFormSubmit = () => {
+    setOpenDialog(false);
+
+    const newData = {
+      id: Date.now(),
+      img: URL.createObjectURL(selectedFile),
+      label: textValue,
+      description: textareaValue,
+    };
+    setUploadedData([...uploadedData, newData]);
+    setSelectedFile(null);
+    setTextValue("");
+    setTextareaValue("");
+    setOpenDialog(false);
+  };
+
+  const renderSelectedImage = () => {
+    return (
+      selectedFile && (
+        <div>
+          <img
+            src={URL.createObjectURL(selectedFile)}
+            alt="Selected File"
+            style={{ maxWidth: "100%", maxHeight: "400px" }}
+          />
+        </div>
+      )
+    );
+  };
 
   return (
     <div>
       <AppBar position="static" color="default">
         <Toolbar>
-          <Button variant="contained" color="secondary" onClick={handleUploadClick}>
+          <Button
+            variant="contained"
+            color="secondary"
+            onClick={handleUploadClick}
+          >
             Upload
           </Button>
           <input
             type="file"
             accept="image/*"
-            style={{ display: 'none' }}
+            style={{ display: "none" }}
             ref={fileInputRef}
             onChange={handleFileUpload}
           />
         </Toolbar>
       </AppBar>
-      <Container maxWidth="lg" sx={{ pt: 2 }}>
-        <Typography variant="body1">
-          This is the main content area of the UploadComponent.
-        </Typography>
-       
+      <Container maxWidth="100" sx={{ pt: 2 }}>
+        <div>
+          <Typography>Retrieved Data</Typography>
+
+          <Grid container columns={{ xs: 4, md: 8 }} spacing={5}>
+            {uploadedData.map((item) => (
+              <Grid item xs={2} key={item.id}>
+                <Card sx={{ maxWidth: 345 }}>
+                  <CardMedia
+                    component="img"
+                    height="140"
+                    image={item.img}
+                    alt="img"
+                  />
+                  <CardContent sx={{ height: "25px" }}>
+                    <Typography variant="body1">{item.label}</Typography>
+                    <Typography
+                      variant="body2"
+                      color="text.secondary"
+                      className="description"
+                    >
+                      {item.description}
+                    </Typography>
+                  </CardContent>
+                </Card>
+              </Grid>
+            ))}
+          </Grid>
+        </div>
       </Container>
       <Dialog open={openDialog} onClose={handleDialogClose}>
         <DialogTitle>Selected Image</DialogTitle>
         <DialogContent>
-        {renderSelectedImage()}
+          {renderSelectedImage()}
           <TextField
             label="Label"
             fullWidth
             value={textValue}
-            onChange={handleTextChange}
+            onChange={(e) => setTextValue(e.target.value)}
             margin="normal"
           />
           <TextareaAutosize
             placeholder="Description"
             value={textareaValue}
-            onChange={handleTextareaChange}
+            onChange={(e) => setTextareaValue(e.target.value)}
             className="fullWidthTextarea"
           />
           <Button
